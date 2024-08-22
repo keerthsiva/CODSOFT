@@ -1,38 +1,119 @@
-import java.util.Scanner;
+import java.util.*;
 
-public class RuleBasedChatbot {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String input;
+class Movie {
+    String title;
+    List<String> genres;
 
-        System.out.println("Hello! I'm a simple chatbot. How can I assist you today?");
-        
-        while (true) {
-            System.out.print("> ");
-            input = scanner.nextLine().toLowerCase(); // Convert input to lowercase for easier matching
+    Movie(String title, List<String> genres) {
+        this.title = title;
+        this.genres = genres;
+    }
 
-            // Exit condition
-            if (input.contains("bye") || input.contains("exit")) {
-                System.out.println("Goodbye! Have a nice day.");
-                break;
-            }
+    @Override
+    public String toString() {
+        return title + " (" + String.join(", ", genres) + ")";
+    }
+}
 
-            // Simple rule-based responses
-            if (input.contains("hello") || input.contains("hi")) {
-                System.out.println("Hello! How can I help you?");
-            } else if (input.contains("name")) {
-                System.out.println("I'm just a simple chatbot, I don't have a name.");
-            } else if (input.contains("how are you")) {
-                System.out.println("I'm a program, so I don't have feelings, but thank you for asking!");
-            } else if (input.contains("time")) {
-                System.out.println("I can't tell time, but I can tell you a lot about Java programming!");
-            } else if (input.contains("java")) {
-                System.out.println("Java is a versatile and powerful programming language. How can I help with it?");
-            } else {
-                System.out.println("I'm sorry, I didn't understand that. Could you please rephrase?");
+class User {
+    String name;
+    Map<Movie, Integer> ratings;
+
+    User(String name) {
+        this.name = name;
+        this.ratings = new HashMap<>();
+    }
+
+    void rateMovie(Movie movie, int rating) {
+        ratings.put(movie, rating);
+    }
+
+    Map<String, Double> calculateGenrePreference() {
+        Map<String, Double> genreScores = new HashMap<>();
+        int totalRatings = 0;
+
+        for (Map.Entry<Movie, Integer> entry : ratings.entrySet()) {
+            Movie movie = entry.getKey();
+            int rating = entry.getValue();
+            totalRatings += rating;
+
+            for (String genre : movie.genres) {
+                genreScores.put(genre, genreScores.getOrDefault(genre, 0.0) + rating);
             }
         }
 
-        scanner.close();
+        for (Map.Entry<String, Double> entry : genreScores.entrySet()) {
+            genreScores.put(entry.getKey(), entry.getValue() / totalRatings);
+        }
+
+        return genreScores;
+    }
+}
+
+class Recommender {
+    List<Movie> movies;
+
+    Recommender(List<Movie> movies) {
+        this.movies = movies;
+    }
+
+    List<Movie> recommendMovies(User user) {
+        Map<String, Double> genrePreference = user.calculateGenrePreference();
+        List<Movie> recommendations = new ArrayList<>();
+
+        for (Movie movie : movies) {
+            if (!user.ratings.containsKey(movie)) {
+                double score = 0.0;
+                for (String genre : movie.genres) {
+                    score += genrePreference.getOrDefault(genre, 0.0);
+                }
+                if (score > 0) {
+                    recommendations.add(movie);
+                }
+            }
+        }
+
+        recommendations.sort((m1, m2) -> Double.compare(
+                calculateMovieScore(m2, genrePreference),
+                calculateMovieScore(m1, genrePreference)
+        ));
+
+        return recommendations;
+    }
+
+    private double calculateMovieScore(Movie movie, Map<String, Double> genrePreference) {
+        double score = 0.0;
+        for (String genre : movie.genres) {
+            score += genrePreference.getOrDefault(genre, 0.0);
+        }
+        return score;
+    }
+}
+
+public class RecommendationSystem {
+    public static void main(String[] args) {
+        // Sample movies
+        Movie m1 = new Movie("Action Movie 1", Arrays.asList("Action", "Thriller"));
+        Movie m2 = new Movie("Drama Movie 1", Arrays.asList("Drama", "Romance"));
+        Movie m3 = new Movie("Action Movie 2", Arrays.asList("Action", "Adventure"));
+        Movie m4 = new Movie("Comedy Movie 1", Arrays.asList("Comedy", "Family"));
+        Movie m5 = new Movie("Drama Movie 2", Arrays.asList("Drama"));
+
+        List<Movie> movieList = Arrays.asList(m1, m2, m3, m4, m5);
+
+        // Sample user
+        User user = new User("John");
+        user.rateMovie(m1, 5); // Strong preference for Action/Thriller
+        user.rateMovie(m2, 3); // Moderate preference for Drama/Romance
+
+        // Recommender system
+        Recommender recommender = new Recommender(movieList);
+        List<Movie> recommendations = recommender.recommendMovies(user);
+
+        // Print recommendations
+        System.out.println("Recommended movies for " + user.name + ":");
+        for (Movie movie : recommendations) {
+            System.out.println(movie);
+        }
     }
 }
