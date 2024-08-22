@@ -1,0 +1,38 @@
+import java.util.Scanner;
+
+public class RuleBasedChatbot {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+
+        System.out.println("Hello! I'm a simple chatbot. How can I assist you today?");
+        
+        while (true) {
+            System.out.print("> ");
+            input = scanner.nextLine().toLowerCase(); // Convert input to lowercase for easier matching
+
+            // Exit condition
+            if (input.contains("bye") || input.contains("exit")) {
+                System.out.println("Goodbye! Have a nice day.");
+                break;
+            }
+
+            // Simple rule-based responses
+            if (input.contains("hello") || input.contains("hi")) {
+                System.out.println("Hello! How can I help you?");
+            } else if (input.contains("name")) {
+                System.out.println("I'm just a simple chatbot, I don't have a name.");
+            } else if (input.contains("how are you")) {
+                System.out.println("I'm a program, so I don't have feelings, but thank you for asking!");
+            } else if (input.contains("time")) {
+                System.out.println("I can't tell time, but I can tell you a lot about Java programming!");
+            } else if (input.contains("java")) {
+                System.out.println("Java is a versatile and powerful programming language. How can I help with it?");
+            } else {
+                System.out.println("I'm sorry, I didn't understand that. Could you please rephrase?");
+            }
+        }
+
+        scanner.close();
+    }
+}
