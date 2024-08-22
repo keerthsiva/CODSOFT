@@ -1,0 +1,37 @@
+import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
+import org.nd4j.linalg.factory.Nd4j;
+import org.datavec.image.loader.NativeImageLoader;
+import java.io.File;
+
+public class ImageCaptioning {
+
+    public static void main(String[] args) throws Exception {
+        // Load the pre-trained CNN model (e.g., ResNet)
+        ComputationGraph cnnModel = ModelSerializer.restoreComputationGraph(new File("path/to/pretrained/cnn_model.zip"));
+
+        // Load and preprocess the image
+        NativeImageLoader loader = new NativeImageLoader(224, 224, 3);
+        INDArray image = loader.asMatrix(new File("path/to/image.jpg"));
+        ImagePreProcessingScaler scaler = new ImagePreProcessingScaler(0, 1);
+        scaler.transform(image);
+
+        // Extract features using the CNN
+        INDArray features = cnnModel.outputSingle(image);
+
+        // Load the pre-trained RNN model
+        ComputationGraph rnnModel = ModelSerializer.restoreComputationGraph(new File("path/to/pretrained/rnn_model.zip"));
+
+        // Generate the caption
+        String caption = generateCaption(features, rnnModel);
+        System.out.println("Generated Caption: " + caption);
+    }
+
+    private static String generateCaption(INDArray features, ComputationGraph rnnModel) {
+        // Implement caption generation logic
+        // For simplicity, returning a dummy caption
+        return "A sample generated caption";
+    }
+}
